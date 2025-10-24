@@ -6,43 +6,12 @@
 #include <stdexcept>
 #include <cerrno>
 #include <cstring>
+#include "./../include/request.h"
+#include "./../include/response.h"
 
 using namespace std;
 
-class Request{
-    private : 
-    int connfd;
-    string body;
 
-    void generate_body(){
-        char buff[64] = {};
-        string message;
-
-        ssize_t n; 
-        n = read(connfd, buff, sizeof(buff));
-        body.append(buff, n);
-        
-        cout<<n<<endl;
-
-        if(n < 0){
-            cout<< "Soemthing went wrong while reading message from client"<<endl;
-        }
-    }
-    public:
-
-    Request(int conn_fd){
-        connfd = conn_fd;
-        generate_body();
-    }
-
-    string get_body(){
-        return body;
-    }
-};
-
-class Response{
-
-};
 
 class Express {
 private :
@@ -134,9 +103,11 @@ int main() {
             cout<< "Message from client : "<< request.get_body() << endl;
             
             // Simple message to the client
-            string msg = "hello from c++ server";
+            string msg = "hello from c++ server after request response class";
 
-            write(connfd, msg.c_str(), msg.size());
+            Response response(connfd);
+
+            response.send(msg);
 
             close(connfd); // close connection after responding
         }
