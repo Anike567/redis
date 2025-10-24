@@ -102,14 +102,15 @@ int main() {
 
             cout<< "Message from client : "<< request.get_body() << endl;
             
-            // Simple message to the client
+            
             string msg = "hello from c++ server after request response class";
 
             Response response(connfd);
 
             response.send(msg);
-
-            close(connfd); // close connection after responding
+            
+            // close connection after responding
+            close(connfd);
         }
 
     } catch (const exception &e) {

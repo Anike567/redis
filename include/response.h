@@ -13,4 +13,4 @@ public:
     int send(const std::string &msg); // send method
 };
 
-#endif // RESPONSE_H
+#endif /
