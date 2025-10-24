@@ -10,7 +10,34 @@
 using namespace std;
 
 class Request{
+    private : 
+    int connfd;
+    string body;
 
+    void generate_body(){
+        char buff[64] = {};
+        string message;
+
+        ssize_t n; 
+        n = read(connfd, buff, sizeof(buff));
+        body.append(buff, n);
+        
+        cout<<n<<endl;
+
+        if(n < 0){
+            cout<< "Soemthing went wrong while reading message from client"<<endl;
+        }
+    }
+    public:
+
+    Request(int conn_fd){
+        connfd = conn_fd;
+        generate_body();
+    }
+
+    string get_body(){
+        return body;
+    }
 };
 
 class Response{
@@ -89,7 +116,7 @@ public:
 int main() {
     try {
         Express server;
-        server.listen(3000); // start server on port 8080
+        server.listen(4000); // start server on port 8080
 
         while (true) {
             struct sockaddr_in client_address = {};
@@ -102,16 +129,15 @@ int main() {
                 continue;
             }
 
-            cout<<connfd<<endl;
+            Request request(connfd);
+
+            cout<< "Message from client : "<< request.get_body() << endl;
+            
             // Simple message to the client
-            string msg =
-                "HTTP/1.1 200 OK\r\n"
-                "Content-Type: text/plain\r\n"
-                "Connection: close\r\n"
-                "\r\n"
-                "Hello from C++ Express server!";
+            string msg = "hello from c++ server";
 
             write(connfd, msg.c_str(), msg.size());
+
             close(connfd); // close connection after responding
         }
 
