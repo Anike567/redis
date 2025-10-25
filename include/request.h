@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <unistd.h> 
+#include<map>
 
 using namespace std;
 
@@ -19,7 +20,7 @@ private:
 public:
     Request(int conn_fd);
     string get_body();
-    string getHeader();
+    string getHeader(string name);
 };
 
 #endif

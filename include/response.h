@@ -3,11 +3,12 @@
 
 #include <string>
 #include <unistd.h>
+#include<map>
 
 class Response {
 private:
     int confd;
-    map<string, string> header;
+    // std::map<string, string> header;
 
 public:
     Response(int conn_fd);

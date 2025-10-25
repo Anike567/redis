@@ -110,7 +110,14 @@ int main() {
             response.sendFile("./../test/index.html");
             
             // close connection after responding
-            close(connfd);
+            int feedback = close(connfd);
+
+            if(feedback == 0){
+                cout<<"request response cycle completed successfully"<<endl;
+            }
+            else{
+                cout<<"Close failed" << strerror(errno)<<endl;
+            }
         }
 
     } catch (const exception &e) {

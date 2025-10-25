@@ -36,13 +36,18 @@ int main(void){
     }
 
     char buff[64] = {};
-    string msg = "Hello from cliend";
+    string msg = "Hello from client";
 
     write(fd, msg.c_str(), msg.size());
+    shutdown(fd, SHUT_WR);
 
-    ssize_t n = read(fd, buff, sizeof(buff));
+    ssize_t n ;
+    string str;
+    while((n = read(fd, buff, sizeof(buff))) > 0){
+        str.append(buff, n);
+    }
 
-    printf("server says: %s\n", buff);
+    cout<<"server says: " << str;
     close(fd);
 
 

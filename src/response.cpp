@@ -4,6 +4,7 @@
 #include <cerrno>
 #include <cstring>
 #include <fstream>
+#include<sys/socket.h>
 
 Response::Response(int conn_fd) : confd(conn_fd) {}
 
@@ -42,6 +43,8 @@ int Response::sendFile(const std::string &path) {
             return -1;
         }
     }
+    
+    // shutdown(confd, SHUT_WR);
 
     file.close();
     return 0; 
