@@ -11,12 +11,15 @@ class Request {
 private:
     int connfd;
     string body;
+    map<string, string> header;
 
-    void generate_body();
+    void generateBody();
+    void generateHeader();
 
 public:
     Request(int conn_fd);
     string get_body();
+    string getHeader();
 };
 
 #endif

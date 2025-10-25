@@ -107,7 +107,7 @@ int main() {
 
             Response response(connfd);
 
-            response.send(msg);
+            response.sendFile("./../test/index.html");
             
             // close connection after responding
             close(connfd);

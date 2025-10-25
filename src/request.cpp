@@ -10,23 +10,39 @@
 
 using namespace std;
 
-void Request::generate_body() {
+void Request::generateBody() {
     char buff[64] = {};
-    ssize_t n = read(connfd, buff, sizeof(buff));
-
-    body.append(buff, n);
-    
-
-    if (n < 0) {
-        cout << "Something went wrong while reading message from client" << endl;
+    ssize_t n ;
+    while((n = read(connfd, buff, sizeof(buff))) > 0){
+        
+        if (n < 0) {
+            cout << "Something went wrong while reading message from client" << endl;
+            break;
+        }
+        for(char ch : buff){
+            cout<<ch;
+        }
+        body.append(buff, n);
     }
+}
+
+void Request::generateHeader(){
+    
 }
 
 Request::Request(int conn_fd) {
     connfd = conn_fd;
-    generate_body();
+    generateBody();
 }
 
 string Request::get_body() {
     return body;
+}
+
+string Request::getHeader(string name){
+    if(header.find(name) != header.end()){
+        return header[name];
+    }
+
+    retrun nullptr;
 }
