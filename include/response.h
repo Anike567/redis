@@ -3,18 +3,21 @@
 
 #include <string>
 #include <unistd.h>
-#include<map>
+#include <map>
+
+using namespace std;
 
 class Response {
 private:
-    int confd;
-    // std::map<string, string> header;
+    int connfd;
+    map<string, string> headers;
 
 public:
     Response(int conn_fd);
 
-    int send(const std::string &msg);
-    int sendFile(const std::string &path); 
+    void setHeader(const string &key, const string &value);
+    int send(const string &body, const string &status = "200 OK", const string &contentType = "text/plain");
+    int sendFile(const string &path);
 };
 
 #endif

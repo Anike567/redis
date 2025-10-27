@@ -4,23 +4,32 @@
 #include <iostream>
 #include <string>
 #include <unistd.h> 
-#include<map>
+#include <map>
 
 using namespace std;
 
 class Request {
 private:
     int connfd;
-    string body;
+    string request;
     map<string, string> header;
+    map<string, string> body;
+    string method;
+    string path;
 
-    void generateBody();
-    void generateHeader();
+    void generateRequestString();
+    void parseRequest();
+    void parseHeaders(const string& headerPart);
+    void parseBody(const string& bodyPart);
+    string trim(const string& s);
 
 public:
     Request(int conn_fd);
-    string get_body();
+
+    string getBody(string key);
     string getHeader(string name);
+    string getMethod();
+    string getPath();
 };
 
 #endif

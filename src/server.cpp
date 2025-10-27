@@ -100,14 +100,18 @@ int main() {
 
             Request request(connfd);
 
-            cout<< "Message from client : "<< request.get_body() << endl;
-            
             
             string msg = "hello from c++ server after request response class";
 
             Response response(connfd);
+            // response.setHeader("Content-Type", "audio/mpeg");
+            int tmp = response.sendFile("./../test/index.html");
 
-            response.sendFile("./../test/index.html");
+            if(tmp == -1){
+                cout<<strerror(errno)<<endl;
+            }
+
+            // response.send(msg);
             
             // close connection after responding
             int feedback = close(connfd);
