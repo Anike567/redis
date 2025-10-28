@@ -5,6 +5,8 @@
 #include <cerrno>
 #include <cstring>
 #include <sys/socket.h>
+#include<sys/stat.h>
+#include <fcntl.h>  
 
 Response::Response(int conn_fd) : connfd(conn_fd) {
     headers["Server"] = "CppServer/1.0";
@@ -45,12 +47,6 @@ int Response::send(const string &body, const string &status, const string &conte
 }
 
 int Response::sendFile(const string &path) {
-    ifstream file(path, ios::in | ios::binary);
-    if (!file.is_open()) {
-        cerr << "Failed to open file: " << path << endl;
-        return -1;
-    }
-
     // Determine content type
     string contentType = "application/octet-stream";
     if (path.find(".html") != string::npos)
@@ -68,39 +64,59 @@ int Response::sendFile(const string &path) {
     else if (path.find(".pdf") != string::npos)
         contentType = "application/pdf";
 
-    // Get file size
-    file.seekg(0, ios::end);
-    size_t fileSize = file.tellg();
-    file.seekg(0, ios::beg);
+    struct stat st;
+    if (stat(path.c_str(), &st) < 0) {
+        perror("stat failed");
+        return -1;
+    }
 
     // Build header
     stringstream headerStream;
     headerStream << "HTTP/1.1 200 OK\r\n";
     headerStream << "Content-Type: " << contentType << "\r\n";
-    headerStream << "Content-Length: " << fileSize << "\r\n";
+    headerStream << "Content-Length: " << st.st_size << "\r\n";
     headerStream << "Connection: close\r\n";
     headerStream << "\r\n";
 
     string headerStr = headerStream.str();
 
-    // Send header
     if (write(connfd, headerStr.c_str(), headerStr.size()) < 0) {
-        cerr << "Error writing headers: " << strerror(errno) << endl;
-        file.close();
+        perror("header write failed");
         return -1;
     }
 
-    // Send file in chunks
+    int file_fd = open(path.c_str(), O_RDONLY);
+    if (file_fd < 0) {
+        perror("open file failed");
+        return -1;
+    }
+
     char buffer[4096];
-    while (file.read(buffer, sizeof(buffer)) || file.gcount() > 0) {
-        ssize_t bytesSent = write(connfd, buffer, file.gcount());
-        if (bytesSent < 0) {
-            cerr << "Error sending file: " << strerror(errno) << endl;
-            file.close();
-            return -1;
+    ssize_t n;
+    while ((n = read(file_fd, buffer, sizeof(buffer))) > 0) {
+        ssize_t total_written = 0;
+        while (total_written < n) {
+            ssize_t written_bytes = write(connfd, buffer + total_written, n - total_written);
+
+              if (written_bytes < 0) {
+                if (errno == EPIPE) {
+                    cerr << "Client closed connection early\n";
+                    close(file_fd);
+                    return -1;
+                }
+                perror("write failed");
+                close(file_fd);
+                return -1;
+            }
+            total_written += written_bytes;
         }
     }
 
-    file.close();
+  
+
+
+    close(file_fd);
+    shutdown(connfd, SHUT_WR);
+
     return 0;
 }

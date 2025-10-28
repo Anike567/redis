@@ -104,7 +104,7 @@ int main() {
             string msg = "hello from c++ server after request response class";
 
             Response response(connfd);
-            // response.setHeader("Content-Type", "audio/mpeg");
+            
             int tmp = response.sendFile("./../test/index.html");
 
             if(tmp == -1){
