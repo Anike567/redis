@@ -1,3 +1,16 @@
+*{
+    padding: 0;
+    margin: 0;
+}
+
 body {
-    background-color: "red";
+    height: 100vh;
+    width: 100vw;
+    background-color: red;   /* ✅ Remove quotes */
+}
+
+.container{
+    padding: 100px;
+    background-color: yellow;
+    color: red;              /* ✅ Remove quotes */
 }
