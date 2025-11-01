@@ -1,133 +1,71 @@
-#include <sys/socket.h>
-#include <sys/types.h>
+#include "./../include/server.h"
 #include <iostream>
-#include <netinet/in.h>
-#include <unistd.h>
 #include <stdexcept>
-#include <cerrno>
 #include <cstring>
-#include "./../include/request.h"
-#include "./../include/response.h"
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <functional>
+#include <string>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 using namespace std;
 
-
-
-class Express {
-private :
-    int fd;
-    int domain = AF_INET;      // IPv4
-    int type = SOCK_STREAM;    // TCP
-    int protocol = 0;          // Default (TCP)
-    struct sockaddr_in addr = {};
-
-    int create_server() {
-        fd = socket(domain, type, protocol);
-        if (fd == -1) {
-            throw runtime_error(string("Socket creation failed: ") + strerror(errno));
-        }
-        cout << "Socket created successfully. FD = " << fd << endl;
-        return fd;
+int Express::create_server() {
+    fd = socket(domain, type, protocol);
+    if (fd == -1) {
+        throw runtime_error(string("Socket creation failed: ") + strerror(errno));
     }
 
+    int opt = 1;
+    setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)); 
 
-    //constructor
-public:
-    Express() {  
-        try {
-            fd = create_server();
-        } catch (const exception &e) {
-            cerr << "Error: " << e.what() << endl;
-        }
-    }
-    
-    int get_fd(){
-        return fd;
-    }
-    void listen(int port) {
-        addr.sin_family = AF_INET;
-        addr.sin_port = htons(port);
-        addr.sin_addr.s_addr = INADDR_ANY;
+    cout << "Socket created. FD = " << fd << endl;
+    return fd;
+}
 
-        int rv = ::bind(fd, (struct sockaddr*)&addr, sizeof(addr));
-        if (rv == -1) {
-            throw runtime_error(string("bind() failed: ") + strerror(errno));
-        }
-
-        rv = ::listen(fd, SOMAXCONN);
-        if (rv == -1) {
-            throw runtime_error(string("listen() failed: ") + strerror(errno));
-        }
-
-        cout << "Server listening on port " << port << "..." << endl;
-    }
-
-    void close_server() {
-        if (close(fd) == -1) {
-            throw runtime_error(string("Failed to close socket: ") + strerror(errno));
-        }
-        cout << "Socket closed successfully." << endl;
-    }
-
-
-
-    // destructor for automatic cleanup
-
-    ~Express() {  
-        try {
-            close_server();
-        } catch (...) {
-            // Ignore errors during cleanup
-        }
-    }
-};
-
-int main() {
+Express::Express() {
     try {
-        Express server;
-        server.listen(4000); // start server on port 8080
+        create_server();
+    } catch (const exception& e) {
+        cerr << e.what() << endl;
+    }
+}
 
-        while (true) {
-            struct sockaddr_in client_address = {};
-            socklen_t address_len = sizeof(client_address);
+int Express::get_fd() {
+    return fd;
+}
 
-            int connfd = accept(server.get_fd(), (struct sockaddr*)&client_address, &address_len);
+void Express::setConnFd(int conn_fd){
+    this->conn_fd = conn_fd;
+}
 
-            if (connfd < 0) {
-                cerr << "Accept failed: " << strerror(errno) << endl;
-                continue;
-            }
+void Express::listen(int port) {
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(port);
+    addr.sin_addr.s_addr = INADDR_ANY;
 
-            Request request(connfd);
-
-            
-            string msg = "hello from c++ server after request response class";
-
-            Response response(connfd);
-            
-            int tmp = response.sendFile("./../test/index.html");
-
-            if(tmp == -1){
-                cout<<strerror(errno)<<endl;
-            }
-
-            // response.send(msg);
-            
-            // close connection after responding
-            int feedback = close(connfd);
-
-            if(feedback == 0){
-                cout<<"request response cycle completed successfully"<<endl;
-            }
-            else{
-                cout<<"Close failed" << strerror(errno)<<endl;
-            }
-        }
-
-    } catch (const exception &e) {
-        cerr << "Fatal error: " << e.what() << endl;
-        return 1;
+    if (::bind(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+        throw runtime_error(string("Bind failed: ") + strerror(errno));
     }
 
-    return 0;
+    if (::listen(fd, SOMAXCONN) == -1) {
+        throw runtime_error(string("Listen failed: ") + strerror(errno));
+    }
+
+    cout << "Server running on port " << port << endl;
+}
+
+void Express::close_server() {
+    close(fd);
+    cout << "Server closed." << endl;
+}
+
+
+
+
+
+Express::~Express() {
+    close_server();
 }

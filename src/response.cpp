@@ -51,6 +51,12 @@ int Response::sendFile(const string &path) {
     string contentType = "application/octet-stream";
     if (path.find(".html") != string::npos)
         contentType = "text/html";
+    else if(path.find(".css") != string::npos){
+        contentType = "text/css";
+    }
+    else if(path.find(".js") != string::npos){
+        contentType = "application/javascript";
+    }
     else if (path.find(".json") != string::npos)
         contentType = "application/json";
     else if (path.find(".png") != string::npos)

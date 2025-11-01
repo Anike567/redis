@@ -18,6 +18,10 @@ Request::Request(int conn_fd) {
     parseRequest();
 }
 
+// return the method is the request is get or post
+
+
+
 // Read raw HTTP request from socket
 void Request::generateRequestString() {
     char buff[1024];
