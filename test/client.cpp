@@ -15,14 +15,9 @@ static void die(const char *msg) {
     abort();
 }
 
-int main(int argc, char *argv[]) {
-    // Build message from command line args
-    string msg = "";
-    for (int i = 1; i < argc; i++) {
-        msg += argv[i];
-        if (i < argc - 1) msg += " ";
-    }
-
+int main(void) {
+   
+   
     // Create socket
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd < 0) {
@@ -43,10 +38,16 @@ int main(int argc, char *argv[]) {
     }
 
     // Send message
-    ssize_t sent = write(fd, msg.c_str(), msg.size());
-    if (sent < 0) {
+    const string header = "GET/http1.1\r\n\r\n ";
+    const string body = "{command:get, key:name}";
+    ssize_t sent;
+    
+    sent = write(fd, header.c_str(), header.size());
+
+    if(sent < 0 || sent < header.size()){
         perror("write");
     }
+    sent = write(fd, body.c_str(), body.size());
     shutdown(fd, SHUT_WR);
 
     // Read response

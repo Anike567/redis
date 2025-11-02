@@ -26,7 +26,7 @@ private:
 public:
     Request(int conn_fd);
 
-    string getBody(string key);
+    map<string, string>& getBody();
     string getHeader(string name);
     string getMethod();
     string getPath();
