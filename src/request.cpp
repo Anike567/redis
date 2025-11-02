@@ -122,11 +122,8 @@ void Request::parseBody(const string& bodyPartRaw) {
     }
 }
 
-string Request::getBody(string key) {
-    if (body.find(key) != body.end()) {
-        return body[key];
-    }
-    return "undefined";
+map<string, string>& Request::getBody() {
+    return body;
 }
 
 string Request::getHeader(string name) {

@@ -33,6 +33,12 @@ int main() {
             const string path = req.getPath();
 
             cout<<method << "  "<<path<<endl;
+
+            map<string, string> body = req.getBody();
+
+            for(auto itr : body){
+                cout<<itr.first << "  "<< itr.second<<endl;
+            }
             if(path == "/" && method == "GET"){
                 res.sendFile("./../test/index.html");
             }
