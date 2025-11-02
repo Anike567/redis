@@ -10,10 +10,13 @@
 #include "./../include/response.h"
 #include "./../include/server.h"
 
+using namespace std;
+
 int main() {
+    map<string, string> mp;
     try {
         Express app;
-        app.listen(4000); // start server on port 8080
+        app.listen(4000); 
 
         while (true) {
             struct sockaddr_in client_address = {};
@@ -29,25 +32,23 @@ int main() {
             app.setConnFd(connfd);
             Request req(connfd);
             Response res(connfd);
-            const string method = req.getMethod();
-            const string path = req.getPath();
+            string method = req.getMethod();
+            string path = req.getPath();
 
             cout<<method << "  "<<path<<endl;
 
             map<string, string> body = req.getBody();
+            if (auto it = body.find("command"); it != body.end())
+                cout << it->first << " " << it->second << endl;
 
-            for(auto itr : body){
-                cout<<itr.first << "  "<< itr.second<<endl;
-            }
-            if(path == "/" && method == "GET"){
-                res.sendFile("./../test/index.html");
-            }
-            else if(path == "/style.css" && method == "GET"){
-                res.sendFile("./../test/style.css");
-            }
-            else{
-                res.send("Not Found", "404");
-            }
+            if (auto it = body.find("key"); it != body.end())
+                cout << it->first << " " << it->second << endl;
+
+            string msg = "Message from redis server";
+
+            res.send(msg);
+
+            
         }
 
     } catch (const exception &e) {

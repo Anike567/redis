@@ -42,7 +42,7 @@ int Response::send(const string &body, const string &status, const string &conte
         cerr << "Write failed: " << strerror(errno) << endl;
         return -1;
     }
-
+    shutdown(connfd, SHUT_WR);
     return n;
 }
 
