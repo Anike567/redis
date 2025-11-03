@@ -6,9 +6,7 @@
 #include <arpa/inet.h>
 #include <functional>
 #include <string>
-#include <filesystem>
-
-namespace fs = std::filesystem;
+#include<fstream>
 
 using namespace std;
 
@@ -41,6 +39,7 @@ void Express::setConnFd(int conn_fd){
     this->conn_fd = conn_fd;
 }
 
+
 void Express::listen(int port) {
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
@@ -57,13 +56,22 @@ void Express::listen(int port) {
     cout << "Server running on port " << port << endl;
 }
 
+void Express::get(const string path, Handler fn){
+    getRoutes[path] = fn;
+}
+
+Handler Express::findRoute(const string method, const string path){
+    if(method == "GET" && getRoutes.count(path)){
+        return getRoutes[path];
+    }
+
+    return nullptr;
+}
+
 void Express::close_server() {
     close(fd);
     cout << "Server closed." << endl;
 }
-
-
-
 
 
 Express::~Express() {

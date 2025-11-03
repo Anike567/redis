@@ -6,14 +6,24 @@
 #include <stdexcept>
 #include <cerrno>
 #include <cstring>
+#include<fstream>
+#include<signal.h>
 #include "./../include/request.h"
 #include "./../include/response.h"
 #include "./../include/server.h"
 
 int main() {
+    signal(SIGPIPE, SIG_IGN); 
     try {
         Express app;
-        app.listen(4000); // start server on port 8080
+        app.listen(4000); 
+
+        
+
+        app.get("/", [](Request &req, Response &res){
+            res.sendFile("./../test/index.html");
+        });
+
 
         while (true) {
             struct sockaddr_in client_address = {};
@@ -31,23 +41,25 @@ int main() {
             Response res(connfd);
             const string method = req.getMethod();
             const string path = req.getPath();
+            
+            cout<<method<<" "<<path<<endl;
+            auto handler = app.findRoute(method, path);
 
-            cout<<method << "  "<<path<<endl;
+            if(handler){
+                handler(req, res);
+            }
+            else {
+                const string location = "./../test" + path;
+                ifstream file(location);
 
-            map<string, string> body = req.getBody();
-
-            for(auto itr : body){
-                cout<<itr.first << "  "<< itr.second<<endl;
+                if(file.good()){
+                    res.sendFile(location);
+                }
+                else{
+                    res.send("Not Found", "404");
+                }
             }
-            if(path == "/" && method == "GET"){
-                res.sendFile("./../test/index.html");
-            }
-            else if(path == "/style.css" && method == "GET"){
-                res.sendFile("./../test/style.css");
-            }
-            else{
-                res.send("Not Found", "404");
-            }
+            close(connfd);
         }
 
     } catch (const exception &e) {

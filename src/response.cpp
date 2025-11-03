@@ -122,7 +122,7 @@ int Response::sendFile(const string &path) {
 
 
     close(file_fd);
+    
     shutdown(connfd, SHUT_WR);
-
     return 0;
 }
