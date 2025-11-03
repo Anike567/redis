@@ -7,6 +7,9 @@
 #include "./request.h"
 #include "./response.h"
 
+using Handler = function<void(Request &req, Response &res)>;
+
+
 class Express {
 private:
     int fd;
@@ -14,6 +17,7 @@ private:
     int type = SOCK_STREAM;
     int protocol = 0;
     int conn_fd;
+    map<string, Handler> getRoutes;
     struct sockaddr_in addr;
 
     int create_server();
@@ -24,7 +28,9 @@ public:
     void listen(int port);
     void close_server();
     void setConnFd(int conn_fd);
-
+    void get(const string path, Handler fn);
+    Handler findRoute(const string method, const string path);
+    
     ~Express();
 };
 
